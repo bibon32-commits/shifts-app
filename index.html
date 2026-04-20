@@ -119,14 +119,21 @@ button{
 }
 
 #counter{
-    margin:0 0 8px;
+    margin:0 0 6px;
     font-size:12px;
     color:var(--muted);
 }
 
+#salary{
+    margin:0 0 10px;
+    font-size:15px;
+    font-weight:700;
+    color:var(--text);
+}
+
 #wrap{
-    height:calc(100vh - 220px - env(safe-area-inset-bottom) - env(safe-area-inset-top));
-    height:calc(100dvh - 220px - env(safe-area-inset-bottom) - env(safe-area-inset-top));
+    height:calc(100vh - 255px - env(safe-area-inset-bottom) - env(safe-area-inset-top));
+    height:calc(100dvh - 255px - env(safe-area-inset-bottom) - env(safe-area-inset-top));
     overflow-y:auto;
     -webkit-overflow-scrolling:touch;
     width:100%;
@@ -208,8 +215,8 @@ button{
 
 @media (max-width:390px){
     #wrap{
-        height:calc(100vh - 210px - env(safe-area-inset-bottom) - env(safe-area-inset-top));
-        height:calc(100dvh - 210px - env(safe-area-inset-bottom) - env(safe-area-inset-top));
+        height:calc(100vh - 245px - env(safe-area-inset-bottom) - env(safe-area-inset-top));
+        height:calc(100dvh - 245px - env(safe-area-inset-bottom) - env(safe-area-inset-top));
     }
 
     .workerSwitch{
@@ -273,6 +280,7 @@ button{
 </div>
 
 <div id="counter"></div>
+<div id="salary"></div>
 
 <div id="wrap">
   <div class="weekHeader" id="weekHeader"></div>
@@ -284,6 +292,7 @@ const c = document.getElementById("calendar");
 const wrap = document.getElementById("wrap");
 const mLabel = document.getElementById("monthLabel");
 const counter = document.getElementById("counter");
+const salary = document.getElementById("salary");
 const weekHeader = document.getElementById("weekHeader");
 const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
@@ -296,6 +305,7 @@ const monthControls = document.getElementById("monthControls");
 const names = ["Давид", "Женька", "Рома", "Я"];
 const defaultDates = ["2026-04-22", "2026-04-20", "2026-04-19", "2026-04-21"];
 const weekDays = ["пн","вт","ср","чт","пт","сб","вс"];
+const shiftRate = 5000;
 
 let selected = localStorage.getItem("worker");
 if (!names.includes(selected)) selected = "Я";
@@ -441,6 +451,7 @@ function render() {
   }
 
   counter.textContent = "Рабочих смен (" + selected + "): " + totalWorkDays;
+  salary.textContent = "Зарплата: " + (totalWorkDays * shiftRate).toLocaleString("ru-RU") + " руб.";
 }
 
 monthControls.addEventListener("touchstart", event => {
