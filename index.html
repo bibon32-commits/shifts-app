@@ -12,9 +12,11 @@ margin:0;
 background:#0b0c10;
 color:white;
 text-align:center;
-overflow:hidden;
 
-/* FIX iPhone bottom */
+/* FIX iPhone */
+overflow-y:auto;
+-webkit-overflow-scrolling: touch;
+
 padding-bottom: env(safe-area-inset-bottom);
 }
 
@@ -59,7 +61,7 @@ button:active{transform:scale(0.9);}
 
 #wrap{
 position:relative;
-height:calc(100dvh - 240px);
+height:calc(100dvh - 240px - env(safe-area-inset-bottom));
 overflow:hidden;
 }
 
@@ -131,6 +133,17 @@ const worker=document.getElementById("worker");
 const monthLabel=document.getElementById("monthLabel");
 const counter=document.getElementById("counter");
 
+/* FIX: proper DOM refs */
+const n0=document.getElementById("n0");
+const n1=document.getElementById("n1");
+const n2=document.getElementById("n2");
+const n3=document.getElementById("n3");
+
+const d0=document.getElementById("d0");
+const d1=document.getElementById("d1");
+const d2=document.getElementById("d2");
+const d3=document.getElementById("d3");
+
 let names=JSON.parse(localStorage.getItem("names"))||["Давид","Женька","Рома","Я"];
 let dates=JSON.parse(localStorage.getItem("dates"))||["","","",""];
 let selected=localStorage.getItem("worker")||names[0];
@@ -163,12 +176,11 @@ localStorage.setItem("dates",JSON.stringify(dates));
 localStorage.setItem("worker",selected);
 }
 
-/* manual save */
 function saveManual(){
 localStorage.setItem("manual",JSON.stringify(manual));
 }
 
-/* цикл */
+/* cycle */
 function cycle(diff){
 let c=((diff%4)+4)%4;
 return ["День","Ночь","Отсыпной","Выходной"][c];
@@ -178,14 +190,13 @@ function color(s){
 return {День:"work",Ночь:"night",Отсыпной:"sleep",Выходной:"off"}[s];
 }
 
-/* смена вручную */
 function nextShift(s){
 const arr=["День","Ночь","Отсыпной","Выходной"];
 let i=arr.indexOf(s);
 return arr[(i+1)%4];
 }
 
-/* свайп */
+/* swipe FIX */
 let startX=0;
 
 document.addEventListener("touchstart",e=>{
@@ -195,8 +206,8 @@ startX=e.touches[0].clientX;
 document.addEventListener("touchend",e=>{
 let endX=e.changedTouches[0].clientX;
 
-if(startX-endX>50) animateMonth(1);
-if(endX-startX>50) animateMonth(-1);
+if(startX-endX>50) animateMonth(-1);
+if(endX-startX>50) animateMonth(1);
 });
 
 function animateMonth(dir){
@@ -217,9 +228,9 @@ calendar.style.transform="translateX(0)";
 },180);
 }
 
-/* click on day */
+/* toggle day */
 function toggleDay(key, original){
-manual[key] = nextShift(manual[key] ?? original);
+manual[key]=nextShift(manual[key]??original);
 saveManual();
 render();
 }
@@ -255,19 +266,15 @@ let date=new Date(y,m,d);
 
 let diff=0;
 if(!isNaN(start)){
-diff=Math.floor((new Date(date.getFullYear(),date.getMonth(),date.getDate())
-- new Date(start.getFullYear(),start.getMonth(),start.getDate()))
-/(1000*60*60*24));
+diff=Math.floor((date-start)/(1000*60*60*24));
 }
 
 let base=cycle(diff);
 
-/* ручная правка */
 let key=`${y}-${m}-${d}`;
-let s=manual[key] ?? base;
+let s=manual[key]??base;
 
-/* счётчик */
-if(s==="День" || s==="Ночь") workCount++;
+if(s==="День"||s==="Ночь") workCount++;
 
 let isToday=date.toDateString()===today.toDateString();
 
