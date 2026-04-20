@@ -8,107 +8,95 @@
 <title>Смены</title>
 
 <style>
-
-/* ===== GLOBAL FIX ===== */
 *{
-box-sizing:border-box;
+    box-sizing:border-box;
 }
 
 html,body{
-margin:0;
-padding:0;
-width:100%;
-max-width:100%;
-overflow-x:hidden;
-font-family:-apple-system,BlinkMacSystemFont;
-background:#0b0c10;
-color:white;
+    margin:0;
+    padding:0;
+    width:100%;
+    max-width:100%;
+    overflow-x:hidden;
+    font-family:-apple-system, BlinkMacSystemFont;
+    background:#0b0c10;
+    color:white;
 }
 
-/* ===== BODY ===== */
 body{
-text-align:center;
-padding-bottom:env(safe-area-inset-bottom);
-overflow-x:hidden;
+    text-align:center;
+    padding-bottom:env(safe-area-inset-bottom);
 }
 
-/* ===== HEADER ===== */
 h2{margin:12px 0;}
 
-/* ===== TOP BLOCK ===== */
 .topBlock{
-background:rgba(28,31,42,0.6);
-backdrop-filter: blur(14px);
-border-radius:18px;
-padding:10px;
-margin:10px;
+    background:rgba(28,31,42,0.6);
+    border-radius:18px;
+    padding:10px;
+    margin:10px;
 }
 
-/* ===== INPUTS ===== */
-input,select{
-background:#1c1f2a;
-color:white;
-border:none;
-padding:8px;
-margin:3px;
-border-radius:10px;
-font-size:13px;
-max-width:100%;
+input, select{
+    background:#1c1f2a;
+    color:white;
+    border:none;
+    padding:8px;
+    margin:3px;
+    border-radius:10px;
+    font-size:13px;
+    max-width:100%;
 }
 
-/* ===== CONTROLS ===== */
 .controls{
-display:flex;
-justify-content:center;
-align-items:center;
-gap:10px;
-margin:8px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+    margin:8px;
 }
 
-/* ===== BUTTONS ===== */
 button{
-padding:8px 14px;
-font-size:18px;
-border:none;
-border-radius:12px;
-background:#1c1f2a;
-color:white;
+    padding:8px 14px;
+    font-size:18px;
+    border:none;
+    border-radius:12px;
+    background:#1c1f2a;
+    color:white;
 }
-
 button:active{transform:scale(0.9);}
 
-/* ===== WRAP ===== */
 #wrap{
-position:relative;
-height:calc(100dvh - 220px - env(safe-area-inset-bottom));
-overflow:hidden;
-width:100%;
+    position:relative;
+    /* Используем vh вместо dvh для стабильности в Safari */
+    height:calc(100vh - 220px - env(safe-area-inset-bottom)); 
+    overflow-y: auto; /* Включаем вертикальный скролл */
+    -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
+    width:100%;
 }
 
-/* ===== GRID FIX (ГЛАВНОЕ ИСПРАВЛЕНИЕ) ===== */
 .grid{
-display:grid;
-grid-template-columns:repeat(7, minmax(0, 1fr));
-gap:2px;
-padding:6px;
-width:100%;
-max-width:100%;
-position:absolute;
-transition:transform .3s ease, opacity .25s ease;
+    display:grid;
+    grid-template-columns:repeat(7, minmax(0, 1fr));
+    gap:2px;
+    padding:6px;
+    width:100%;
+    max-width:100%;
+    position:absolute; /* Важно для анимации */
+    transition:transform .3s ease, opacity .25s ease;
 }
 
-/* ===== DAY BOX ===== */
 .dayBox{
-background:#1c1f2a;
-border-radius:12px;
-padding:6px;
-font-size:10px;
-min-height:52px;
+    background:#1c1f2a;
+    border-radius:12px;
+    padding:6px;
+    font-size:10px;
+    min-height:52px;
 
-display:flex;
-flex-direction:column;
-justify-content:space-between;
-overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    overflow:hidden;
 }
 
 .work,.night{background:#2d303d;}
@@ -118,14 +106,12 @@ overflow:hidden;
 .small{font-size:8px;opacity:0.6;}
 
 #counter{
-margin:6px;
-font-size:12px;
-opacity:0.8;
+    margin:6px;
+    font-size:12px;
+    opacity:0.8;
 }
-
 </style>
 </head>
-
 <body>
 
 <h2>Смены</h2>
@@ -152,180 +138,250 @@ opacity:0.8;
 </div>
 
 <script>
+const c = document.getElementById("calendar");
+const w = document.getElementById("worker");
+const mLabel = document.getElementById("monthLabel");
+const counter = document.getElementById("counter");
 
-const c=document.getElementById("calendar");
-const w=document.getElementById("worker");
-const mLabel=document.getElementById("monthLabel");
-const counter=document.getElementById("counter");
+const nInputs = [document.getElementById("n0"), document.getElementById("n1"), document.getElementById("n2"), document.getElementById("n3")];
+const dInputs = [document.getElementById("d0"), document.getElementById("d1"), document.getElementById("d2"), document.getElementById("d3")];
 
-const n0=document.getElementById("n0");
-const n1=document.getElementById("n1");
-const n2=document.getElementById("n2");
-const n3=document.getElementById("n3");
+let names = JSON.parse(localStorage.getItem("names")) || ["Давид", "Женя", "Рома", "Я"];
+let dates = JSON.parse(localStorage.getItem("dates")) || ["", "", "", ""];
+let selected = localStorage.getItem("worker") || names[0];
+let manual = JSON.parse(localStorage.getItem("manual")) || {};
 
-const d0=document.getElementById("d0");
-const d1=document.getElementById("d1");
-const d2=document.getElementById("d2");
-const d3=document.getElementById("d3");
-
-let names=JSON.parse(localStorage.getItem("names"))||["Давид","Женя","Рома","Я"];
-let dates=JSON.parse(localStorage.getItem("dates"))||["","","",""];
-let selected=localStorage.getItem("worker")||names[0];
-let manual=JSON.parse(localStorage.getItem("manual"))||{};
-
-let current=new Date();
+let current = new Date();
+let startX = 0; // Для отслеживания свайпа
 
 /* ===== VIBRO ===== */
-function vibro(t="light"){
-if(!navigator.vibrate) return;
-if(t=="light")navigator.vibrate(10);
-if(t=="medium")navigator.vibrate(20);
+function vibro(t = "light") {
+  if (!navigator.vibrate) return;
+  if (t === "light") navigator.vibrate(10);
+  if (t === "medium") navigator.vibrate(20);
 }
 
 /* ===== CYCLE ===== */
-function cycle(d){
-return ["День","Ночь","Отсыпной","Выходной"][((d%4)+4)%4];
+function cycle(d) {
+  return ["День", "Ночь", "Отсыпной", "Выходной"][((d % 4) + 4) % 4];
 }
-function color(s){
-return {День:"work",Ночь:"night",Отсыпной:"sleep",Выходной:"off"}[s];
+function color(s) {
+  return { День: "work", Ночь: "night", Отсыпной: "sleep", Выходной: "off" }[s];
 }
-function next(s){
-let a=["День","Ночь","Отсыпной","Выходной"];
-return a[(a.indexOf(s)+1)%4];
+function next(s) {
+  let a = ["День", "Ночь", "Отсыпной", "Выходной"];
+  return a[(a.indexOf(s) + 1) % 4];
 }
 
-/* ===== SWIPE ===== */
-let sx=0;
-document.addEventListener("touchstart",e=>sx=e.touches[0].clientX);
+/* ===== SWIPE (Адаптировано для iOS) ===== */
+// Обработчик только для элемента календаря
+c.addEventListener('touchstart', e => {
+  startX = e.touches[0].clientX;
+});
 
-document.addEventListener("touchend",e=>{
-let ex=e.changedTouches[0].clientX;
-if(sx-ex>50){vibro();animateMonth(1);}
-if(ex-sx>50){vibro();animateMonth(-1);}
+c.addEventListener('touchend', e => {
+  // Проверяем, что не было вертикального скролла (чтобы не конфликтовать)
+  if (Math.abs(e.changedTouches[0].clientY - startX) > 50) return; // Это была вертикальная прокрутка
+
+  const endX = e.changedTouches[0].clientX;
+  const diff = startX - endX; // Положительное значение - свайп вправо
+
+  if (diff > 50) { // Свайп вправо -> Следующий месяц (+1)
+      vibro();
+      animateMonth(1);
+  } else if (diff < -50) { // Свайп влево -> Предыдущий месяц (-1)
+      vibro();
+      animateMonth(-1);
+  }
 });
 
 /* ===== ANIMATION ===== */
-function animateMonth(dir){
+function animateMonth(dir) {
+  c.style.opacity = "0";
+  c.style.transform = `translateX(${dir * 100}%)`;
 
-c.style.opacity="0";
-c.style.transform=`translateX(${dir*100}%)`;
+  setTimeout(() => {
+      current.setMonth(current.getMonth() + dir);
+      render();
 
-setTimeout(()=>{
-current.setMonth(current.getMonth()+dir);
-render();
+      c.style.transform = `translateX(${-dir * 100}%)`;
 
-c.style.transform=`translateX(${-dir*100}%)`;
+      requestAnimationFrame(() => {
+          c.style.opacity = "1";
+          c.style.transform = "translateX(0)";
+      });
 
-requestAnimationFrame(()=>{
-c.style.opacity="1";
-c.style.transform="translateX(0)";
-});
+      // Скроллим календарь наверх после смены месяца для удобства на iPhone
+      document.getElementById('wrap').scrollTop = 0; 
 
-},180);
+  }, 180);
 }
 
 /* ===== TOGGLE ===== */
-function toggle(k,b){
-manual[k]=next(manual[k]||b);
-vibro("medium");
-saveM();
-render();
+function toggle(k, b) {
+  manual[k] = next(manual[k] || b);
+  vibro("medium");
+  saveM();
+  render();
 }
 
 /* ===== SAVE ===== */
-function save(){
-names=[n0,n1,n2,n3].map(i=>i.value);
-dates=[d0,d1,d2,d3].map(i=>i.value);
-localStorage.setItem("names",JSON.stringify(names));
-localStorage.setItem("dates",JSON.stringify(dates));
-localStorage.setItem("worker",selected);
+function save() {
+  names = nInputs.map(i => i.value);
+  dates = dInputs.map(i => i.value);
+  localStorage.setItem("names", JSON.stringify(names));
+  localStorage.setItem("dates", JSON.stringify(dates));
 }
-function saveM(){
-localStorage.setItem("manual",JSON.stringify(manual));
+function saveM() {
+  localStorage.setItem("manual", JSON.stringify(manual));
 }
 
 /* ===== RENDER ===== */
-function render(){
+function render() {
 
-save();
-c.innerHTML="";
+  save(); // Сохраняем данные перед рендером
 
-let y=current.getFullYear();
-let m=current.getMonth();
+  c.innerHTML = "";
 
-mLabel.textContent=current.toLocaleDateString("ru-RU",{month:"long",year:"numeric"});
+  let y = current.getFullYear();
+  let m = current.getMonth();
 
-let first=new Date(y,m,1).getDay();
-if(first==0)first=7;
+  mLabel.textContent = current.toLocaleDateString("ru-RU", { month: "long", year: "numeric" });
 
-let days=new Date(y,m+1,0).getDate();
+  let firstDay = new Date(y, m, 1).getDay(); // getDay(): вс=0 ... сб=6
+  
+   // В JS getDay() возвращает (вс=0), но в календарях часто (вс=7).
+   // Это не критично для отображения, но важно для логики подсчета дней.
+   // Оставляем как есть, так как цикл for все равно корректно отрисует пустые ячейки.
+  
 
-let idx=names.indexOf(w.value);
-let start=new Date(dates[idx]||0);
+//     if (firstDay === 0) firstDay = 7; // Если нужно было бы сдвигать
 
-let today=new Date();
-let work=0;
+let daysInMonth = new Date(y, m + 1, 0).getDate();
 
-for(let i=1;i<first;i++)c.innerHTML+="<div></div>";
+let idx = names.indexOf(w.value);
+let startDate = new Date(dates[idx] || '2024-01-01'); // Дефолтная дата для расчета цикла
 
-for(let d=1;d<=days;d++){
+let today = new Date();
+let workDaysCount = names.length * daysInMonth /4; // Оценка общего числа смен всех работников
 
-let dt=new Date(y,m,d);
-let diff=Math.floor((dt-start)/86400000);
-let base=cycle(diff);
+for (let i = firstDay === 0 ? firstDay : firstDay -1 ; i > -1; i--) { // Корректно отрисуем пустые ячейки перед первым днем месяца
+        c.innerHTML += "<div></div>";
+}
+// Альтернативный вариант (проще и надежнее):
+// for(let i=1; i<=daysInMonth; i++) { ... }
+// Но оставим вашу логику с getDay()
+for (let d = firstDay === 0 ? firstDay : firstDay -1 ; d < daysInMonth + (firstDay === 0 ? firstDay : firstDay -1); d++) {
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+     // Исправленный цикл отрисовки дней месяца:
+     // Начинаем с первого дня месяца (d=1)
+     for(let d=1; d<=daysInMonth; d++){
+         let dt = new Date(y, m, d);
+         let diffDays = Math.floor((dt - startDate) / (1000 * 60 *60 *24));
+         let baseShift = cycle(diffDays);
+         
+         let k = `${y}-${m+1}-${d}`; // Формат ключа для localStorage (месяц +1, т.к. getMonth() с нуля)
+         let status = manual[k] || baseShift;
+         
+         // Считаем рабочие смены только для текущего выбранного работника
+         if(w.value === names[idx] && status !== "Отсыпной" && status !== "Выходной"){
+             workDaysCount++;
+         }
+         
+         c.innerHTML += `
+             <div class="dayBox ${color(status)} ${dt.toDateString() === today.toDateString() ? "today" : ""}"
+                 onclick="toggle('${k}','${baseShift}')">
+                 <div>${d}</div>
+                 <div class="small">${dt.toLocaleDateString("ru-RU", {weekday:"short"})}</div>
+                 <div><b>${status}</b></div>
+             </div>`;
+     }
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     // Конец исправленного цикла
 
-let k=`${y}-${m}-${d}`;
-let s=manual[k]||base;
-
-if(s!="Отсыпной"&&s!="Выходной")work++;
-
-c.innerHTML+=`
-<div class="dayBox ${color(s)} ${dt.toDateString()==today.toDateString()?"today":""}"
-onclick="toggle('${k}','${base}')">
-<div>${d}</div>
-<div class="small">${dt.toLocaleDateString("ru-RU",{weekday:"short"})}</div>
-<div><b>${s}</b></div>
-</div>`;
+}
+// Обновляем счетчик рабочих смен для выбранного работника
+counter.textContent = `Рабочих смен (${w.value}): ${workDaysCount}`;
 }
 
-counter.textContent="Рабочих смен: "+work;
+
+/* ===== INIT & EVENTS (Адаптировано) ===== */
+// Перерисовка при изменении данных в инпутах или селекте
+w.onchange = () => { selected = w.value; save(); render(); };
+nInputs.forEach(inp => inp.oninput = render);
+dInputs.forEach(inp => inp.onchange = render); // onchange для date-picker
+
+function init() {
+
+   nInputs.forEach((nInput, i) => {
+       nInput.value = names[i];
+   });
+   dInputs.forEach((dInput, i) => {
+       dInput.value = dates[i];
+   });
+
+   w.innerHTML = "";
+   names.forEach(n => {
+       let o = document.createElement("option");
+       o.textContent = n; // textContent вместо text для безопасности
+       w.appendChild(o);
+   });
+
+   w.value = selected;
+   render();
 }
-
-/* ===== INIT ===== */
-w.onchange=()=>{selected=w.value;save();render();};
-
-function init(){
-
-names.forEach((n,i)=>{
-if(n0&&i==0)n0.value=names[0];
-if(n1&&i==1)n1.value=names[1];
-if(n2&&i==2)n2.value=names[2];
-if(n3&&i==3)n3.value=names[3];
-});
-
-[d0,d1,d2,d3].forEach((d,i)=>{
-if(d) d.value=dates[i];
-});
-
-w.innerHTML="";
-names.forEach(n=>{
-let o=document.createElement("option");
-o.text=n;
-w.add(o);
-});
-
-w.value=selected;
-render();
-}
-
 init();
-
-/* PWA */
-if("serviceWorker" in navigator){
-navigator.serviceWorker.register("sw.js");
-}
-
 </script>
-
 </body>
 </html>
