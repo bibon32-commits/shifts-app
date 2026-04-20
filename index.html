@@ -8,17 +8,18 @@
 <style>
 *{
     box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
 }
 
 :root{
     --bg:#0b0c10;
-    --panel:rgba(28,31,42,0.72);
-    --card:#1c1f2a;
+    --panel:rgba(28,31,42,0.82);
+    --card:#171a22;
     --text:#ffffff;
-    --muted:rgba(255,255,255,0.65);
     --accent:#4da3ff;
-    --work:#2d303d;
-    --off:#5c5c5c;
+    --dark:#2d303d;
+    --gray:#5c5c5c;
+    --muted:rgba(255,255,255,0.72);
 }
 
 html,body{
@@ -34,24 +35,24 @@ html,body{
 
 body{
     text-align:center;
-    padding-bottom:env(safe-area-inset-bottom);
+    padding:max(8px, env(safe-area-inset-top)) 8px env(safe-area-inset-bottom);
 }
 
 h2{
-    margin:12px 0;
+    margin:8px 0 10px;
+    font-size:22px;
+    font-weight:700;
 }
 
 .topBlock{
     background:var(--panel);
     border-radius:18px;
     padding:10px;
-    margin:10px;
+    margin:0 0 10px;
+    backdrop-filter:blur(10px);
 }
 
 .workerRow{
-    display:grid;
-    grid-template-columns:minmax(0,1fr) minmax(132px,150px);
-    gap:8px;
     margin:6px 0;
 }
 
@@ -60,56 +61,52 @@ input,select{
     background:var(--card);
     color:var(--text);
     border:none;
-    padding:10px;
+    padding:11px 12px;
     margin:0;
-    border-radius:10px;
-    font-size:13px;
+    border-radius:12px;
+    font-size:16px;
+    line-height:1.2;
     max-width:100%;
     -webkit-appearance:none;
     appearance:none;
 }
 
-input[type="date"]{
-    min-height:38px;
-}
-
 .controls{
-    display:flex;
-    justify-content:center;
+    display:grid;
+    grid-template-columns:46px 1fr 46px;
     align-items:center;
-    gap:10px;
-    margin:8px 10px;
+    gap:8px;
+    margin:0 0 8px;
 }
 
 button{
-    padding:8px 14px;
-    font-size:18px;
+    padding:8px 0;
+    font-size:20px;
     border:none;
     border-radius:12px;
     background:var(--card);
     color:var(--text);
-    min-width:46px;
 }
 
 button:active{
-    transform:scale(0.94);
+    transform:scale(0.96);
 }
 
 #monthLabel{
-    min-width:150px;
+    font-size:16px;
+    font-weight:600;
     text-transform:capitalize;
 }
 
 #counter{
-    margin:6px;
+    margin:0 0 8px;
     font-size:12px;
-    opacity:0.8;
+    color:var(--muted);
 }
 
 #wrap{
-    position:relative;
-    height:calc(100vh - 260px - env(safe-area-inset-bottom));
-    height:calc(100dvh - 260px - env(safe-area-inset-bottom));
+    height:calc(100vh - 255px - env(safe-area-inset-bottom) - env(safe-area-inset-top));
+    height:calc(100dvh - 255px - env(safe-area-inset-bottom) - env(safe-area-inset-top));
     overflow-y:auto;
     -webkit-overflow-scrolling:touch;
     width:100%;
@@ -117,54 +114,78 @@ button:active{
 
 .grid{
     display:grid;
-    grid-template-columns:repeat(7,minmax(0,1fr));
-    gap:2px;
-    padding:6px;
+    grid-template-columns:repeat(7, minmax(0, 1fr));
+    gap:3px;
     width:100%;
-    max-width:100%;
-    position:absolute;
-    inset:0 auto auto 0;
-    transition:transform .3s ease, opacity .25s ease;
 }
 
 .dayBox{
+    min-width:0;
     background:var(--card);
     border-radius:12px;
-    padding:6px;
-    font-size:10px;
-    min-height:58px;
+    padding:6px 3px;
+    min-height:60px;
     display:flex;
     flex-direction:column;
     justify-content:space-between;
+    align-items:center;
     overflow:hidden;
     word-break:break-word;
+    overflow-wrap:anywhere;
+    font-size:9px;
+    line-height:1.15;
+}
+
+.dayNum{
+    font-size:13px;
+    font-weight:700;
+}
+
+.dayName{
+    font-size:7px;
+    opacity:0.65;
+    text-transform:lowercase;
+}
+
+.dayShift{
+    font-size:9px;
 }
 
 .work.night{
-    background:var(--work);
+    background:var(--dark);
 }
 
 .sleep.off{
-    background:var(--off);
+    background:var(--gray);
 }
 
 .today{
     outline:2px solid var(--accent);
+    outline-offset:-2px;
 }
 
-.small{
-    font-size:8px;
-    opacity:0.6;
-}
-
-@media (max-width:420px){
-    .workerRow{
-        grid-template-columns:1fr;
+@media (max-width:390px){
+    #wrap{
+        height:calc(100vh - 247px - env(safe-area-inset-bottom) - env(safe-area-inset-top));
+        height:calc(100dvh - 247px - env(safe-area-inset-bottom) - env(safe-area-inset-top));
     }
 
-    #wrap{
-        height:calc(100vh - 390px - env(safe-area-inset-bottom));
-        height:calc(100dvh - 390px - env(safe-area-inset-bottom));
+    .dayBox{
+        min-height:56px;
+        padding:5px 2px;
+        font-size:8px;
+    }
+
+    .dayNum{
+        font-size:12px;
+    }
+
+    .dayName{
+        font-size:6px;
+    }
+
+    .dayShift{
+        font-size:8px;
     }
 }
 </style>
@@ -174,23 +195,11 @@ button:active{
 <h2>Смены</h2>
 
 <div class="topBlock">
-  <div class="workerRow">
-    <input id="n0" placeholder="Имя 1">
-    <input id="d0" type="date">
-  </div>
-  <div class="workerRow">
-    <input id="n1" placeholder="Имя 2">
-    <input id="d1" type="date">
-  </div>
-  <div class="workerRow">
-    <input id="n2" placeholder="Имя 3">
-    <input id="d2" type="date">
-  </div>
-  <div class="workerRow">
-    <input id="n3" placeholder="Имя 4">
-    <input id="d3" type="date">
-  </div>
-  <select id="worker"></select>
+  <div class="workerRow"><input id="n0" placeholder="Имя 1"></div>
+  <div class="workerRow"><input id="n1" placeholder="Имя 2"></div>
+  <div class="workerRow"><input id="n2" placeholder="Имя 3"></div>
+  <div class="workerRow"><input id="n3" placeholder="Имя 4"></div>
+  <div class="workerRow"><select id="worker"></select></div>
 </div>
 
 <div class="controls">
@@ -212,97 +221,88 @@ const w = document.getElementById("worker");
 const mLabel = document.getElementById("monthLabel");
 const counter = document.getElementById("counter");
 const nInputs = ["n0", "n1", "n2", "n3"].map(id => document.getElementById(id));
-const dInputs = ["d0", "d1", "d2", "d3"].map(id => document.getElementById(id));
 
-let names = JSON.parse(localStorage.getItem("names")) || ["Давид", "Женя", "Рома", "Я"];
-let dates = JSON.parse(localStorage.getItem("dates")) || ["", "", "", ""];
+const defaultNames = ["Давид", "Женька", "Рома", "Я"];
+const defaultDates = ["2026-04-22", "2026-04-20", "2026-04-19", "2026-04-21"];
+
+let names = JSON.parse(localStorage.getItem("names")) || defaultNames.slice();
 let selected = localStorage.getItem("worker") || names[0];
 let manual = JSON.parse(localStorage.getItem("manual")) || {};
 let current = new Date();
 let startX = 0;
 let startY = 0;
 
-function vibro(t = "light") {
+function vibro(type = "light") {
   if (!navigator.vibrate) return;
-  navigator.vibrate(t === "light" ? 10 : 20);
+  navigator.vibrate(type === "light" ? 10 : 20);
 }
 
-function cycle(d) {
-  return ["День", "Ночь", "Отсыпной", "Выходной"][((d % 4) + 4) % 4];
+function cycle(diff) {
+  return ["День","Ночь","Отсыпной","Выходной"][((diff % 4) + 4) % 4];
 }
 
-function color(s) {
+function color(status) {
   return {
-    "День": "work night",
-    "Ночь": "work night",
-    "Отсыпной": "sleep off",
-    "Выходной": "sleep off"
-  }[s];
+    "День": "sleep off",
+    "Ночь": "sleep off",
+    "Отсыпной": "work night",
+    "Выходной": "work night"
+  }[status];
 }
 
-function next(s) {
-  const states = ["День", "Ночь", "Отсыпной", "Выходной"];
-  return states[(states.indexOf(s) + 1) % 4];
+function next(status) {
+  const states = ["День","Ночь","Отсыпной","Выходной"];
+  return states[(states.indexOf(status) + 1) % 4];
 }
 
 function parseWorkerStartDate(value) {
-  if (!value) return null;
   const parsed = new Date(value + "T00:00:00");
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
 function save() {
-  names = nInputs.map(input => input.value.trim() || "Без имени");
-  dates = dInputs.map(input => input.value);
+  names = nInputs.map((input, index) => input.value.trim() || defaultNames[index]);
   selected = w.value || names[0];
   localStorage.setItem("names", JSON.stringify(names));
-  localStorage.setItem("dates", JSON.stringify(dates));
   localStorage.setItem("worker", selected);
 }
 
-function saveM() {
+function saveManual() {
   localStorage.setItem("manual", JSON.stringify(manual));
 }
 
 function animateMonth(dir) {
   c.style.opacity = "0";
-  c.style.transform = "translateX(" + (dir * 100) + "%)";
-
+  c.style.transform = "translateX(" + (dir * 40) + "px)";
   setTimeout(() => {
     current.setMonth(current.getMonth() + dir);
     render();
-    c.style.transform = "translateX(" + (-dir * 100) + "%)";
+    c.style.transform = "translateX(" + (-dir * 40) + "px)";
     requestAnimationFrame(() => {
       c.style.opacity = "1";
       c.style.transform = "translateX(0)";
       wrap.scrollTop = 0;
     });
-  }, 180);
+  }, 160);
 }
 
 function toggle(key, fallbackStatus) {
   manual[key] = next(manual[key] || fallbackStatus);
   vibro("medium");
-  saveM();
+  saveManual();
   render();
 }
 
 function fillWorkerSelect() {
-  const previousValue = w.value || selected;
+  const prev = w.value || selected;
   w.innerHTML = "";
-
   names.forEach(name => {
     const option = document.createElement("option");
     option.value = name;
     option.textContent = name;
     w.appendChild(option);
   });
-
-  if (names.includes(previousValue)) {
-    w.value = previousValue;
-  } else {
-    w.value = names[0];
-  }
+  w.value = names.includes(prev) ? prev : names[0];
 }
 
 function render() {
@@ -316,7 +316,7 @@ function render() {
   const firstDayRaw = new Date(year, month, 1).getDay();
   const firstDay = firstDayRaw === 0 ? 6 : firstDayRaw - 1;
   const today = new Date();
-  let totalWorkDaysForSelectedWorker = 0;
+  let totalWorkDays = 0;
 
   mLabel.textContent = current.toLocaleDateString("ru-RU", {
     month: "long",
@@ -331,35 +331,32 @@ function render() {
     const dt = new Date(year, month, day);
     const isToday = dt.toDateString() === today.toDateString();
     let boxClass = "dayBox" + (isToday ? " today" : "");
-    let dayStatusHTML = "";
+    let dayStatus = "";
 
     names.forEach((name, idx) => {
-      const startDate = parseWorkerStartDate(dates[idx]);
-      const baseShift = startDate
-        ? cycle(Math.floor((dt - startDate) / 864e5))
-        : "Не задано";
+      if (w.value !== name) return;
+
+      const startDate = parseWorkerStartDate(defaultDates[idx]);
+      const baseShift = cycle(Math.floor((dt - startDate) / 864e5));
       const key = year + "-" + (month + 1) + "-" + day + "-" + name;
       const status = manual[key] || baseShift;
-      const isSelectedWorker = w.value === name;
-
-      if (!isSelectedWorker) return;
 
       if (status === "День" || status === "Ночь") {
-        totalWorkDaysForSelectedWorker++;
-        boxClass += " " + color(status);
+        totalWorkDays++;
       }
 
-      dayStatusHTML = status;
+      boxClass += " " + color(status);
+      dayStatus = status;
     });
 
     c.innerHTML += '<div class="' + boxClass + '" onclick="toggle(\'' + year + "-" + (month + 1) + "-" + day + "-" + w.value + '\', \'День\')">' +
-      "<div>" + day + "</div>" +
-      '<div class="small">' + dt.toLocaleDateString("ru-RU", { weekday: "short" }) + "</div>" +
-      "<div>" + dayStatusHTML + "</div>" +
+      '<div class="dayNum">' + day + "</div>" +
+      '<div class="dayName">' + dt.toLocaleDateString("ru-RU", { weekday: "short" }) + "</div>" +
+      '<div class="dayShift">' + dayStatus + "</div>" +
       "</div>";
   }
 
-  counter.textContent = "Рабочих смен (" + w.value + "): " + totalWorkDaysForSelectedWorker;
+  counter.textContent = "Рабочих смен (" + w.value + "): " + totalWorkDays;
 }
 
 c.addEventListener("touchstart", event => {
@@ -391,26 +388,16 @@ nInputs.forEach(input => {
   };
 });
 
-dInputs.forEach(input => {
-  input.onchange = () => {
-    save();
-    render();
-  };
-});
-
 function init() {
   nInputs.forEach((input, index) => {
-    input.value = names[index] || "";
-  });
-
-  dInputs.forEach((input, index) => {
-    input.value = dates[index] || "";
+    input.value = names[index] || defaultNames[index];
   });
 
   fillWorkerSelect();
   if (names.includes(selected)) {
     w.value = selected;
   }
+
   render();
 }
 
