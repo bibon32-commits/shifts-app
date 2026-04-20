@@ -1,15 +1,24 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0b0c10">
-
 <title>Смены</title>
-
 <style>
 *{
     box-sizing:border-box;
+}
+
+:root{
+    --bg:#0b0c10;
+    --panel:rgba(28,31,42,0.72);
+    --card:#1c1f2a;
+    --text:#ffffff;
+    --muted:rgba(255,255,255,0.65);
+    --accent:#4da3ff;
+    --work:#2d303d;
+    --off:#5c5c5c;
 }
 
 html,body{
@@ -18,9 +27,9 @@ html,body{
     width:100%;
     max-width:100%;
     overflow-x:hidden;
-    font-family:-apple-system, BlinkMacSystemFont;
-    background:#0b0c10;
-    color:white;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:var(--bg);
+    color:var(--text);
 }
 
 body{
@@ -28,25 +37,40 @@ body{
     padding-bottom:env(safe-area-inset-bottom);
 }
 
-h2{margin:12px 0;}
+h2{
+    margin:12px 0;
+}
 
-/* Обновленный блок имен и дат */
 .topBlock{
-    background:rgba(28,31,42,0.6);
+    background:var(--panel);
     border-radius:18px;
     padding:10px;
     margin:10px;
 }
 
-input, select{
-    background:#1c1f2a;
-    color:white;
+.workerRow{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(132px,150px);
+    gap:8px;
+    margin:6px 0;
+}
+
+input,select{
+    width:100%;
+    background:var(--card);
+    color:var(--text);
     border:none;
-    padding:8px;
-    margin:3px;
+    padding:10px;
+    margin:0;
     border-radius:10px;
     font-size:13px;
     max-width:100%;
+    -webkit-appearance:none;
+    appearance:none;
+}
+
+input[type="date"]{
+    min-height:38px;
 }
 
 .controls{
@@ -54,7 +78,7 @@ input, select{
     justify-content:center;
     align-items:center;
     gap:10px;
-    margin:8px;
+    margin:8px 10px;
 }
 
 button{
@@ -62,252 +86,334 @@ button{
     font-size:18px;
     border:none;
     border-radius:12px;
-    background:#1c1f2a;
-    color:white;
-}
-button:active{transform:scale(0.9);}
-
-#wrap{
-    position:relative;
-    height:calc(100vh - 220px - env(safe-area-inset-bottom));
-    overflow-y: auto; 
-    -webkit-overflow-scrolling: touch; 
-    width:100%;
+    background:var(--card);
+    color:var(--text);
+    min-width:46px;
 }
 
-.grid{
-    display:grid;
-    grid-template-columns:repeat(7, minmax(0, 1fr));
-    gap:2px;
-    padding:6px;
-    width:100%;
-    max-width:100%;
-    position:absolute; 
-    transition:transform .3s ease, opacity .25s ease;
+button:active{
+    transform:scale(0.94);
 }
 
-.dayBox{
-    background:#1c1f2a;
-    border-radius:12px;
-    padding:6px;
-    font-size:10px;
-    min-height:52px;
-
-    display:flex;
-    flex-direction:column;
-    justify-content:space-between;
-    overflow:hidden;
+#monthLabel{
+    min-width:150px;
+    text-transform:capitalize;
 }
-
-/* ИЗМЕНЕНИЕ ЦВЕТОВ */
-.work.night{background:#2d303d;} /* День и Ночь - темно-серый */
-.sleep.off{background:#5c5c5c;}  /* Отсыпной и Выходной - серый */
-
-.today{outline:2px solid #4da3ff;}
-
-.small{font-size:8px;opacity:0.6;}
 
 #counter{
     margin:6px;
     font-size:12px;
     opacity:0.8;
 }
+
+#wrap{
+    position:relative;
+    height:calc(100vh - 260px - env(safe-area-inset-bottom));
+    height:calc(100dvh - 260px - env(safe-area-inset-bottom));
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    width:100%;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(7,minmax(0,1fr));
+    gap:2px;
+    padding:6px;
+    width:100%;
+    max-width:100%;
+    position:absolute;
+    inset:0 auto auto 0;
+    transition:transform .3s ease, opacity .25s ease;
+}
+
+.dayBox{
+    background:var(--card);
+    border-radius:12px;
+    padding:6px;
+    font-size:10px;
+    min-height:58px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    overflow:hidden;
+    word-break:break-word;
+}
+
+.work.night{
+    background:var(--work);
+}
+
+.sleep.off{
+    background:var(--off);
+}
+
+.today{
+    outline:2px solid var(--accent);
+}
+
+.small{
+    font-size:8px;
+    opacity:0.6;
+}
+
+@media (max-width:420px){
+    .workerRow{
+        grid-template-columns:1fr;
+    }
+
+    #wrap{
+        height:calc(100vh - 390px - env(safe-area-inset-bottom));
+        height:calc(100dvh - 390px - env(safe-area-inset-bottom));
+    }
+}
 </style>
 </head>
-
 <body>
 
 <h2>Смены</h2>
 
 <div class="topBlock">
-  <!-- ИЗМЕНЕНИЕ ЛОГИКИ ВЫВОДА ДАТЫ -->
-  <label><input id="n0"> <span id="d0_label"></span></label><br>
-  <label><input id="n1"> <span id="d1_label"></span></label><br>
-  <label><input id="n2"> <span id="d2_label"></span></label><br>
-  <label><input id="n3"> <span id="d3_label"></span></label><br>
-  
+  <div class="workerRow">
+    <input id="n0" placeholder="Имя 1">
+    <input id="d0" type="date">
+  </div>
+  <div class="workerRow">
+    <input id="n1" placeholder="Имя 2">
+    <input id="d1" type="date">
+  </div>
+  <div class="workerRow">
+    <input id="n2" placeholder="Имя 3">
+    <input id="d2" type="date">
+  </div>
+  <div class="workerRow">
+    <input id="n3" placeholder="Имя 4">
+    <input id="d3" type="date">
+  </div>
   <select id="worker"></select>
 </div>
 
 <div class="controls">
-<button onclick="animateMonth(-1)">‹</button>
-<div id="monthLabel"></div>
-<button onclick="animateMonth(1)">›</button>
+  <button type="button" onclick="animateMonth(-1)">‹</button>
+  <div id="monthLabel"></div>
+  <button type="button" onclick="animateMonth(1)">›</button>
 </div>
 
 <div id="counter"></div>
 
 <div id="wrap">
-<div id="calendar" class="grid"></div>
+  <div id="calendar" class="grid"></div>
 </div>
 
 <script>
 const c = document.getElementById("calendar");
+const wrap = document.getElementById("wrap");
 const w = document.getElementById("worker");
 const mLabel = document.getElementById("monthLabel");
 const counter = document.getElementById("counter");
-
-const dLabels = [document.getElementById("d0_label"), document.getElementById("d1_label"), document.getElementById("d2_label"), document.getElementById("d3_label")];
-const nInputs = [document.getElementById("n0"), document.getElementById("n1"), document.getElementById("n2"), document.getElementById("n3")];
-const dInputs = [document.getElementById("d0"), document.getElementById("d1"), document.getElementById("d2"), document.getElementById("d3")];
+const nInputs = ["n0", "n1", "n2", "n3"].map(id => document.getElementById(id));
+const dInputs = ["d0", "d1", "d2", "d3"].map(id => document.getElementById(id));
 
 let names = JSON.parse(localStorage.getItem("names")) || ["Давид", "Женя", "Рома", "Я"];
 let dates = JSON.parse(localStorage.getItem("dates")) || ["", "", "", ""];
 let selected = localStorage.getItem("worker") || names[0];
 let manual = JSON.parse(localStorage.getItem("manual")) || {};
-
 let current = new Date();
-let startX = 0; 
+let startX = 0;
+let startY = 0;
 
-/* ===== VIBRO ===== */
 function vibro(t = "light") {
   if (!navigator.vibrate) return;
-  if (t === "light") navigator.vibrate(10);
-  if (t === "medium") navigator.vibrate(20);
+  navigator.vibrate(t === "light" ? 10 : 20);
 }
 
-/* ===== CYCLE ===== */
 function cycle(d) {
-  // Порядок смен изменен согласно ТЗ
-  return ["День","Ночь","Отсыпной","Выходной"][((d % 4) + 4) % 4];
+  return ["День", "Ночь", "Отсыпной", "Выходной"][((d % 4) + 4) % 4];
 }
+
 function color(s) {
-  // Классы для цветов изменены (work/night и sleep/off)
-  return { День:"work night", Ночь:"work night", Отсыпной:"sleep off", Выходной:"sleep off" }[s];
+  return {
+    "День": "work night",
+    "Ночь": "work night",
+    "Отсыпной": "sleep off",
+    "Выходной": "sleep off"
+  }[s];
 }
+
 function next(s) {
-  let a = ["День","Ночь","Отсыпной","Выходной"];
-  return a[(a.indexOf(s) + 1) % 4];
+  const states = ["День", "Ночь", "Отсыпной", "Выходной"];
+  return states[(states.indexOf(s) + 1) % 4];
 }
 
-/* ===== SWIPE (Адаптировано для iOS) ===== */
-c.addEventListener('touchstart', e => { startX = e.touches[0].clientX; });
-c.addEventListener('touchend', e => {
-  if (Math.abs(e.changedTouches[0].clientY - startX) > 50) return;
-  const endX = e.changedTouches[0].clientX;
-  const diff = startX - endX; 
+function parseWorkerStartDate(value) {
+  if (!value) return null;
+  const parsed = new Date(value + "T00:00:00");
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
 
-  if (diff > 50) { vibro(); animateMonth(1); }
-  else if (diff < -50) { vibro(); animateMonth(-1); }
-});
+function save() {
+  names = nInputs.map(input => input.value.trim() || "Без имени");
+  dates = dInputs.map(input => input.value);
+  selected = w.value || names[0];
+  localStorage.setItem("names", JSON.stringify(names));
+  localStorage.setItem("dates", JSON.stringify(dates));
+  localStorage.setItem("worker", selected);
+}
 
-/* ===== ANIMATION ===== */
+function saveM() {
+  localStorage.setItem("manual", JSON.stringify(manual));
+}
+
 function animateMonth(dir) {
   c.style.opacity = "0";
-  c.style.transform = `translateX(${dir * 100}%)`;
+  c.style.transform = "translateX(" + (dir * 100) + "%)";
 
   setTimeout(() => {
-      current.setMonth(current.getMonth() + dir);
-      render();
-      c.style.transform = `translateX(${-dir * 100}%)`;
-      requestAnimationFrame(() => {
-          c.style.opacity = "1";
-          c.style.transform = "translateX(0)";
-          document.getElementById('wrap').scrollTop = 0; 
-      });
+    current.setMonth(current.getMonth() + dir);
+    render();
+    c.style.transform = "translateX(" + (-dir * 100) + "%)";
+    requestAnimationFrame(() => {
+      c.style.opacity = "1";
+      c.style.transform = "translateX(0)";
+      wrap.scrollTop = 0;
+    });
   }, 180);
 }
 
-/* ===== TOGGLE ===== */
-function toggle(k,b){
-  manual[k] = next(manual[k] || b);
+function toggle(key, fallbackStatus) {
+  manual[key] = next(manual[key] || fallbackStatus);
   vibro("medium");
   saveM();
   render();
 }
 
-/* ===== SAVE ===== */
-function save() {
-   names = nInputs.map(i => i.value);
-   dates = dInputs.map(i => i.value);
-   localStorage.setItem("names", JSON.stringify(names));
-   localStorage.setItem("dates", JSON.stringify(dates));
-}
-function saveM() {
-   localStorage.setItem("manual", JSON.stringify(manual));
+function fillWorkerSelect() {
+  const previousValue = w.value || selected;
+  w.innerHTML = "";
+
+  names.forEach(name => {
+    const option = document.createElement("option");
+    option.value = name;
+    option.textContent = name;
+    w.appendChild(option);
+  });
+
+  if (names.includes(previousValue)) {
+    w.value = previousValue;
+  } else {
+    w.value = names[0];
+  }
 }
 
-/* ===== RENDER ===== */
 function render() {
-   save();
-   c.innerHTML = "";
-   let y = current.getFullYear();
-   let m = current.getMonth(); 
-   let daysInMonth = new Date(y, m + 1, 0).getDate();
-   let firstDayOfMonth = new Date(y, m, 1).getDay(); 
-   
-   mLabel.textContent = current.toLocaleDateString("ru-RU", { month:"long", year:"numeric" });
-   
-   // Обновляем отображение дат справа от имен в шапке
-   names.forEach((name, idx) => {
-       dLabels[idx].textContent = dates[idx] ? ` (${dates[idx]})` : '';
-       dInputs[idx].value = dates[idx]; // Синхронизация инпута и лейбла при рендере
-   });
-   
-   // Отрисовка пустых ячеек перед первым днем месяца (вс=6, пн=0)
-   for(let i=firstDayOfMonth; i>0; i--) {
-       c.innerHTML += "<div></div>";
-   }
-   
-   let totalWorkDaysForSelectedWorker = Math.floor(daysInMonth /4) *2; // Оценка макс. смен
+  save();
+  fillWorkerSelect();
+  c.innerHTML = "";
 
-   for(let d=1; d<=daysInMonth; d++){
-       let dt = new Date(y, m, d);
-       let dayStatusHTML = "";
-       let isTodayClass = dt.toDateString() === new Date().toDateString() ? "today" : "";
-       
-       names.forEach((name, idx) => {
-           let workerStartDateStr = dates[idx] || '2024-01-01';
-           let workerStartDate = new Date(workerStartDateStr);
-           let isSelectedWorker = (w.value === name);
-           
-           let diffDays = Math.floor((dt - workerStartDate) / (1000 *60 *60 *24));
-           let baseShiftForWorker = cycle(diffDays);
-           
-           let k = `${y}-${m+1}-${d}-${name}`; 
-           let statusForWorker = manual[k] || baseShiftForWorker;
-           
-           if(isSelectedWorker && statusForWorker !== "Отсыпной" && statusForWorker !== "Выходной"){
-               dayStatusHTML += `<b>${statusForWorker}</b><br>`;
-               totalWorkDaysForSelectedWorker++;
-               isTodayClass += ` ${color(statusForWorker)}`;
-           } else if(isSelectedWorker){
-               dayStatusHTML += `${statusForWorker}<br>`;
-           }
-       });
-       
-       c.innerHTML += `
-         <div class="dayBox ${isTodayClass}"
-             onclick="toggle('${y}-${m+1}-${d}-${w.value}','День')">
-             <div>${d}</div>
-             <div class="small">${dt.toLocaleDateString("ru-RU", {weekday:"short"})}</div>
-             <div>${dayStatusHTML}</div>
-         </div>`;
-   }
-   
-   counter.textContent = `Рабочих смен (${w.value}): ${totalWorkDaysForSelectedWorker}`;
+  const year = current.getFullYear();
+  const month = current.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayRaw = new Date(year, month, 1).getDay();
+  const firstDay = firstDayRaw === 0 ? 6 : firstDayRaw - 1;
+  const today = new Date();
+  let totalWorkDaysForSelectedWorker = 0;
+
+  mLabel.textContent = current.toLocaleDateString("ru-RU", {
+    month: "long",
+    year: "numeric"
+  });
+
+  for (let i = 0; i < firstDay; i++) {
+    c.innerHTML += "<div></div>";
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dt = new Date(year, month, day);
+    const isToday = dt.toDateString() === today.toDateString();
+    let boxClass = "dayBox" + (isToday ? " today" : "");
+    let dayStatusHTML = "";
+
+    names.forEach((name, idx) => {
+      const startDate = parseWorkerStartDate(dates[idx]);
+      const baseShift = startDate
+        ? cycle(Math.floor((dt - startDate) / 864e5))
+        : "Не задано";
+      const key = year + "-" + (month + 1) + "-" + day + "-" + name;
+      const status = manual[key] || baseShift;
+      const isSelectedWorker = w.value === name;
+
+      if (!isSelectedWorker) return;
+
+      if (status === "День" || status === "Ночь") {
+        totalWorkDaysForSelectedWorker++;
+        boxClass += " " + color(status);
+      }
+
+      dayStatusHTML = status;
+    });
+
+    c.innerHTML += '<div class="' + boxClass + '" onclick="toggle(\'' + year + "-" + (month + 1) + "-" + day + "-" + w.value + '\', \'День\')">' +
+      "<div>" + day + "</div>" +
+      '<div class="small">' + dt.toLocaleDateString("ru-RU", { weekday: "short" }) + "</div>" +
+      "<div>" + dayStatusHTML + "</div>" +
+      "</div>";
+  }
+
+  counter.textContent = "Рабочих смен (" + w.value + "): " + totalWorkDaysForSelectedWorker;
 }
 
+c.addEventListener("touchstart", event => {
+  startX = event.touches[0].clientX;
+  startY = event.touches[0].clientY;
+}, { passive: true });
 
-/* ===== INIT & EVENTS ===== */
-w.onchange = () => { selected = w.value; save(); render(); };
-nInputs.forEach(inp => inp.oninput = render);
-dInputs.forEach(inp => inp.onchange = render); 
+c.addEventListener("touchend", event => {
+  const endX = event.changedTouches[0].clientX;
+  const endY = event.changedTouches[0].clientY;
+  const diffX = startX - endX;
+  const diffY = startY - endY;
+
+  if (Math.abs(diffY) > 50 || Math.abs(diffX) < 50) return;
+
+  vibro();
+  animateMonth(diffX > 0 ? 1 : -1);
+}, { passive: true });
+
+w.onchange = () => {
+  save();
+  render();
+};
+
+nInputs.forEach(input => {
+  input.oninput = () => {
+    save();
+    render();
+  };
+});
+
+dInputs.forEach(input => {
+  input.onchange = () => {
+    save();
+    render();
+  };
+});
 
 function init() {
-   nInputs.forEach((nInput, i) => { nInput.value = names[i]; });
-   dInputs.forEach((dInput, i) => { dInput.value = dates[i]; });
-   
-   w.innerHTML = "";
-   names.forEach(n => {
-       let o = document.createElement("option");
-       o.textContent = n; 
-       w.appendChild(o);
-   });
-   
-   w.value = selected;
-   render();
+  nInputs.forEach((input, index) => {
+    input.value = names[index] || "";
+  });
+
+  dInputs.forEach((input, index) => {
+    input.value = dates[index] || "";
+  });
+
+  fillWorkerSelect();
+  if (names.includes(selected)) {
+    w.value = selected;
+  }
+  render();
 }
+
 init();
 </script>
 </body>
