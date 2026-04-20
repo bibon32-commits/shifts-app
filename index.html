@@ -20,6 +20,7 @@
     --dark:#2d303d;
     --gray:#5c5c5c;
     --muted:rgba(255,255,255,0.72);
+    --week:#11141b;
 }
 
 html,body{
@@ -52,23 +53,45 @@ h2{
     backdrop-filter:blur(10px);
 }
 
-.workerRow{
-    margin:6px 0;
+.workerSwitch{
+    display:grid;
+    grid-template-columns:52px 1fr 52px;
+    align-items:center;
+    gap:8px;
 }
 
-input,select{
-    width:100%;
-    background:var(--card);
-    color:var(--text);
+.switchBtn{
     border:none;
-    padding:11px 12px;
-    margin:0;
-    border-radius:12px;
-    font-size:16px;
-    line-height:1.2;
-    max-width:100%;
-    -webkit-appearance:none;
-    appearance:none;
+    border-radius:14px;
+    background:linear-gradient(180deg, #1c2029 0%, #151821 100%);
+    color:var(--text);
+    min-height:52px;
+    font-size:22px;
+    font-weight:700;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.switchBtn:active,
+button:active{
+    transform:scale(0.96);
+}
+
+.workerName{
+    min-height:52px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0 12px;
+    border-radius:14px;
+    background:linear-gradient(180deg, #1c2029 0%, #151821 100%);
+    border:1px solid rgba(255,255,255,0.06);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.03);
+    font-size:18px;
+    font-weight:600;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    user-select:none;
 }
 
 .controls{
@@ -88,10 +111,6 @@ button{
     color:var(--text);
 }
 
-button:active{
-    transform:scale(0.96);
-}
-
 #monthLabel{
     font-size:16px;
     font-weight:600;
@@ -105,11 +124,28 @@ button:active{
 }
 
 #wrap{
-    height:calc(100vh - 255px - env(safe-area-inset-bottom) - env(safe-area-inset-top));
-    height:calc(100dvh - 255px - env(safe-area-inset-bottom) - env(safe-area-inset-top));
+    height:calc(100vh - 220px - env(safe-area-inset-bottom) - env(safe-area-inset-top));
+    height:calc(100dvh - 220px - env(safe-area-inset-bottom) - env(safe-area-inset-top));
     overflow-y:auto;
     -webkit-overflow-scrolling:touch;
     width:100%;
+}
+
+.weekHeader{
+    display:grid;
+    grid-template-columns:repeat(7, minmax(0, 1fr));
+    gap:3px;
+    margin:0 0 4px;
+}
+
+.weekDay{
+    background:var(--week);
+    border-radius:10px;
+    padding:6px 0;
+    font-size:10px;
+    font-weight:600;
+    color:var(--muted);
+    text-transform:lowercase;
 }
 
 .grid{
@@ -117,6 +153,10 @@ button:active{
     grid-template-columns:repeat(7, minmax(0, 1fr));
     gap:3px;
     width:100%;
+}
+
+.emptyCell{
+    min-height:60px;
 }
 
 .dayBox{
@@ -134,6 +174,7 @@ button:active{
     overflow-wrap:anywhere;
     font-size:9px;
     line-height:1.15;
+    user-select:none;
 }
 
 .dayNum{
@@ -166,8 +207,26 @@ button:active{
 
 @media (max-width:390px){
     #wrap{
-        height:calc(100vh - 247px - env(safe-area-inset-bottom) - env(safe-area-inset-top));
-        height:calc(100dvh - 247px - env(safe-area-inset-bottom) - env(safe-area-inset-top));
+        height:calc(100vh - 210px - env(safe-area-inset-bottom) - env(safe-area-inset-top));
+        height:calc(100dvh - 210px - env(safe-area-inset-bottom) - env(safe-area-inset-top));
+    }
+
+    .workerSwitch{
+        grid-template-columns:48px 1fr 48px;
+    }
+
+    .switchBtn,
+    .workerName{
+        min-height:50px;
+    }
+
+    .workerName{
+        font-size:17px;
+    }
+
+    .weekDay{
+        font-size:9px;
+        padding:5px 0;
     }
 
     .dayBox{
@@ -187,6 +246,10 @@ button:active{
     .dayShift{
         font-size:8px;
     }
+
+    .emptyCell{
+        min-height:56px;
+    }
 }
 </style>
 </head>
@@ -195,46 +258,62 @@ button:active{
 <h2>Смены</h2>
 
 <div class="topBlock">
-  <div class="workerRow"><input id="n0" placeholder="Имя 1"></div>
-  <div class="workerRow"><input id="n1" placeholder="Имя 2"></div>
-  <div class="workerRow"><input id="n2" placeholder="Имя 3"></div>
-  <div class="workerRow"><input id="n3" placeholder="Имя 4"></div>
-  <div class="workerRow"><select id="worker"></select></div>
+  <div class="workerSwitch" id="workerSwitch">
+    <button type="button" class="switchBtn" id="workerPrev">‹</button>
+    <div class="workerName" id="workerName">Я</div>
+    <button type="button" class="switchBtn" id="workerNext">›</button>
+  </div>
 </div>
 
 <div class="controls">
-  <button type="button" onclick="animateMonth(-1)">‹</button>
+  <button type="button" id="prevBtn">‹</button>
   <div id="monthLabel"></div>
-  <button type="button" onclick="animateMonth(1)">›</button>
+  <button type="button" id="nextBtn">›</button>
 </div>
 
 <div id="counter"></div>
 
 <div id="wrap">
+  <div class="weekHeader" id="weekHeader"></div>
   <div id="calendar" class="grid"></div>
 </div>
 
 <script>
 const c = document.getElementById("calendar");
 const wrap = document.getElementById("wrap");
-const w = document.getElementById("worker");
 const mLabel = document.getElementById("monthLabel");
 const counter = document.getElementById("counter");
-const nInputs = ["n0", "n1", "n2", "n3"].map(id => document.getElementById(id));
+const weekHeader = document.getElementById("weekHeader");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+const workerPrev = document.getElementById("workerPrev");
+const workerNext = document.getElementById("workerNext");
+const workerName = document.getElementById("workerName");
+const workerSwitch = document.getElementById("workerSwitch");
 
-const defaultNames = ["Давид", "Женька", "Рома", "Я"];
+const names = ["Давид", "Женька", "Рома", "Я"];
 const defaultDates = ["2026-04-22", "2026-04-20", "2026-04-19", "2026-04-21"];
+const weekDays = ["пн","вт","ср","чт","пт","сб","вс"];
 
-let names = JSON.parse(localStorage.getItem("names")) || defaultNames.slice();
-let selected = localStorage.getItem("worker") || names[0];
+let selected = localStorage.getItem("worker");
+if (!names.includes(selected)) selected = "Я";
+
 let manual = JSON.parse(localStorage.getItem("manual")) || {};
 let current = new Date();
-let startX = 0;
-let startY = 0;
+
+let calendarStartX = 0;
+let calendarStartY = 0;
+let workerStartX = 0;
+let workerStartY = 0;
 
 function vibro(type = "light") {
   if (!navigator.vibrate) return;
-  navigator.vibrate(type === "light" ? 10 : 20);
+  const pattern = {
+    light: 10,
+    medium: 18,
+    strong: [12, 20, 12]
+  };
+  navigator.vibrate(pattern[type] || 10);
 }
 
 function cycle(diff) {
@@ -261,9 +340,6 @@ function parseWorkerStartDate(value) {
 }
 
 function save() {
-  names = nInputs.map((input, index) => input.value.trim() || defaultNames[index]);
-  selected = w.value || names[0];
-  localStorage.setItem("names", JSON.stringify(names));
   localStorage.setItem("worker", selected);
 }
 
@@ -271,19 +347,31 @@ function saveManual() {
   localStorage.setItem("manual", JSON.stringify(manual));
 }
 
+function setWorker(step) {
+  const currentIndex = names.indexOf(selected);
+  const nextIndex = (currentIndex + step + names.length) % names.length;
+  selected = names[nextIndex];
+  workerName.textContent = selected;
+  save();
+  vibro("light");
+  render();
+}
+
 function animateMonth(dir) {
   c.style.opacity = "0";
-  c.style.transform = "translateX(" + (dir * 40) + "px)";
+  c.style.transform = "translateX(" + (dir * 38) + "px)";
+  vibro("light");
+
   setTimeout(() => {
     current.setMonth(current.getMonth() + dir);
     render();
-    c.style.transform = "translateX(" + (-dir * 40) + "px)";
+    c.style.transform = "translateX(" + (-dir * 38) + "px)";
     requestAnimationFrame(() => {
       c.style.opacity = "1";
       c.style.transform = "translateX(0)";
       wrap.scrollTop = 0;
     });
-  }, 160);
+  }, 150);
 }
 
 function toggle(key, fallbackStatus) {
@@ -293,21 +381,15 @@ function toggle(key, fallbackStatus) {
   render();
 }
 
-function fillWorkerSelect() {
-  const prev = w.value || selected;
-  w.innerHTML = "";
-  names.forEach(name => {
-    const option = document.createElement("option");
-    option.value = name;
-    option.textContent = name;
-    w.appendChild(option);
-  });
-  w.value = names.includes(prev) ? prev : names[0];
+function renderWeekHeader() {
+  weekHeader.innerHTML = weekDays
+    .map(day => '<div class="weekDay">' + day + "</div>")
+    .join("");
 }
 
 function render() {
   save();
-  fillWorkerSelect();
+  workerName.textContent = selected;
   c.innerHTML = "";
 
   const year = current.getFullYear();
@@ -324,7 +406,7 @@ function render() {
   });
 
   for (let i = 0; i < firstDay; i++) {
-    c.innerHTML += "<div></div>";
+    c.innerHTML += '<div class="emptyCell"></div>';
   }
 
   for (let day = 1; day <= daysInMonth; day++) {
@@ -334,7 +416,7 @@ function render() {
     let dayStatus = "";
 
     names.forEach((name, idx) => {
-      if (w.value !== name) return;
+      if (selected !== name) return;
 
       const startDate = parseWorkerStartDate(defaultDates[idx]);
       const baseShift = cycle(Math.floor((dt - startDate) / 864e5));
@@ -349,55 +431,54 @@ function render() {
       dayStatus = status;
     });
 
-    c.innerHTML += '<div class="' + boxClass + '" onclick="toggle(\'' + year + "-" + (month + 1) + "-" + day + "-" + w.value + '\', \'День\')">' +
-      '<div class="dayNum">' + day + "</div>" +
-      '<div class="dayName">' + dt.toLocaleDateString("ru-RU", { weekday: "short" }) + "</div>" +
-      '<div class="dayShift">' + dayStatus + "</div>" +
-      "</div>";
+    c.innerHTML += '<div class="' + boxClass + '" onclick="toggle(\'' + year + "-" + (month + 1) + "-" + day + "-" + selected + '\', \'День\')">' +
+      '<div class="dayNum">' + day + '</div>' +
+      '<div class="dayName">' + dt.toLocaleDateString("ru-RU", { weekday: "short" }) + '</div>' +
+      '<div class="dayShift">' + dayStatus + '</div>' +
+      '</div>';
   }
 
-  counter.textContent = "Рабочих смен (" + w.value + "): " + totalWorkDays;
+  counter.textContent = "Рабочих смен (" + selected + "): " + totalWorkDays;
 }
 
 c.addEventListener("touchstart", event => {
-  startX = event.touches[0].clientX;
-  startY = event.touches[0].clientY;
+  calendarStartX = event.touches[0].clientX;
+  calendarStartY = event.touches[0].clientY;
 }, { passive: true });
 
 c.addEventListener("touchend", event => {
   const endX = event.changedTouches[0].clientX;
   const endY = event.changedTouches[0].clientY;
-  const diffX = startX - endX;
-  const diffY = startY - endY;
+  const diffX = calendarStartX - endX;
+  const diffY = calendarStartY - endY;
 
   if (Math.abs(diffY) > 50 || Math.abs(diffX) < 50) return;
-
-  vibro();
   animateMonth(diffX > 0 ? 1 : -1);
 }, { passive: true });
 
-w.onchange = () => {
-  save();
-  render();
-};
+workerSwitch.addEventListener("touchstart", event => {
+  workerStartX = event.touches[0].clientX;
+  workerStartY = event.touches[0].clientY;
+}, { passive: true });
 
-nInputs.forEach(input => {
-  input.oninput = () => {
-    save();
-    render();
-  };
-});
+workerSwitch.addEventListener("touchend", event => {
+  const endX = event.changedTouches[0].clientX;
+  const endY = event.changedTouches[0].clientY;
+  const diffX = workerStartX - endX;
+  const diffY = workerStartY - endY;
+
+  if (Math.abs(diffY) > 40 || Math.abs(diffX) < 35) return;
+  setWorker(diffX > 0 ? 1 : -1);
+}, { passive: true });
+
+prevBtn.addEventListener("click", () => animateMonth(-1));
+nextBtn.addEventListener("click", () => animateMonth(1));
+workerPrev.addEventListener("click", () => setWorker(-1));
+workerNext.addEventListener("click", () => setWorker(1));
 
 function init() {
-  nInputs.forEach((input, index) => {
-    input.value = names[index] || defaultNames[index];
-  });
-
-  fillWorkerSelect();
-  if (names.includes(selected)) {
-    w.value = selected;
-  }
-
+  renderWeekHeader();
+  workerName.textContent = selected;
   render();
 }
 
