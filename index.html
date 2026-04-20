@@ -68,8 +68,7 @@ button:active{transform:scale(0.9);}
 
 #wrap{
     position:relative;
-    /* Используем vh вместо dvh для стабильности в Safari */
-    height:calc(100vh - 220px - env(safe-area-inset-bottom)); 
+    height:calc(100vh - 220px - env(safe-area-inset-bottom));
     overflow-y: auto; /* Включаем вертикальный скролл */
     -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
     width:100%;
@@ -166,7 +165,7 @@ function cycle(d) {
   return ["День", "Ночь", "Отсыпной", "Выходной"][((d % 4) + 4) % 4];
 }
 function color(s) {
-  return { День: "work", Ночь: "night", Отсыпной: "sleep", Выходной: "off" }[s];
+  return { День:"work", Ночь:"night", Отсыпной:"sleep", Выходной:"off" }[s];
 }
 function next(s) {
   let a = ["День", "Ночь", "Отсыпной", "Выходной"];
@@ -174,22 +173,19 @@ function next(s) {
 }
 
 /* ===== SWIPE (Адаптировано для iOS) ===== */
-// Обработчик только для элемента календаря
 c.addEventListener('touchstart', e => {
   startX = e.touches[0].clientX;
 });
-
 c.addEventListener('touchend', e => {
-  // Проверяем, что не было вертикального скролла (чтобы не конфликтовать)
-  if (Math.abs(e.changedTouches[0].clientY - startX) > 50) return; // Это была вертикальная прокрутка
+  if (Math.abs(e.changedTouches[0].clientY - startX) > 50) return; // Вертикальный скролл
 
   const endX = e.changedTouches[0].clientX;
-  const diff = startX - endX; // Положительное значение - свайп вправо
+  const diff = startX - endX; // Свайп вправо -> +
 
-  if (diff > 50) { // Свайп вправо -> Следующий месяц (+1)
+  if (diff > 50) {
       vibro();
       animateMonth(1);
-  } else if (diff < -50) { // Свайп влево -> Предыдущий месяц (-1)
+  } else if (diff < -50) {
       vibro();
       animateMonth(-1);
   }
@@ -203,22 +199,17 @@ function animateMonth(dir) {
   setTimeout(() => {
       current.setMonth(current.getMonth() + dir);
       render();
-
       c.style.transform = `translateX(${-dir * 100}%)`;
-
       requestAnimationFrame(() => {
           c.style.opacity = "1";
           c.style.transform = "translateX(0)";
+          document.getElementById('wrap').scrollTop = 0; 
       });
-
-      // Скроллим календарь наверх после смены месяца для удобства на iPhone
-      document.getElementById('wrap').scrollTop = 0; 
-
   }, 180);
 }
 
 /* ===== TOGGLE ===== */
-function toggle(k, b) {
+function toggle(k,b){
   manual[k] = next(manual[k] || b);
   vibro("medium");
   saveM();
@@ -236,123 +227,72 @@ function saveM() {
   localStorage.setItem("manual", JSON.stringify(manual));
 }
 
-/* ===== RENDER ===== */
+/* ===== RENDER (ГЛАВНОЕ ИСПРАВЛЕНИЕ) ===== */
 function render() {
 
-  save(); // Сохраняем данные перед рендером
+   save(); // Сохраняем данные перед рендером
 
-  c.innerHTML = "";
+   c.innerHTML = "";
+   let y = current.getFullYear();
+   let m = current.getMonth(); // Месяцы с 0 (Янв) по 11 (Дек)
+   let daysInMonth = new Date(y, m + 1, 0).getDate();
+   let firstDayOfMonth = new Date(y, m, 1).getDay(); // getDay(): вс=0 ... сб=6
 
-  let y = current.getFullYear();
-  let m = current.getMonth();
+   mLabel.textContent = current.toLocaleDateString("ru-RU", { month:"long", year:"numeric" });
 
-  mLabel.textContent = current.toLocaleDateString("ru-RU", { month: "long", year: "numeric" });
+   // Отрисовка пустых ячеек перед первым днем месяца
+   for(let i=firstDayOfMonth; i>0; i--) {
+       c.innerHTML += "<div></div>";
+   }
+   
+   let totalWorkDaysForSelectedWorker = 0; // Счетчик для выбранного работника
 
-  let firstDay = new Date(y, m, 1).getDay(); // getDay(): вс=0 ... сб=6
-  
-   // В JS getDay() возвращает (вс=0), но в календарях часто (вс=7).
-   // Это не критично для отображения, но важно для логики подсчета дней.
-   // Оставляем как есть, так как цикл for все равно корректно отрисует пустые ячейки.
-  
-
-//     if (firstDay === 0) firstDay = 7; // Если нужно было бы сдвигать
-
-let daysInMonth = new Date(y, m + 1, 0).getDate();
-
-let idx = names.indexOf(w.value);
-let startDate = new Date(dates[idx] || '2024-01-01'); // Дефолтная дата для расчета цикла
-
-let today = new Date();
-let workDaysCount = names.length * daysInMonth /4; // Оценка общего числа смен всех работников
-
-for (let i = firstDay === 0 ? firstDay : firstDay -1 ; i > -1; i--) { // Корректно отрисуем пустые ячейки перед первым днем месяца
-        c.innerHTML += "<div></div>";
-}
-// Альтернативный вариант (проще и надежнее):
-// for(let i=1; i<=daysInMonth; i++) { ... }
-// Но оставим вашу логику с getDay()
-for (let d = firstDay === 0 ? firstDay : firstDay -1 ; d < daysInMonth + (firstDay === 0 ? firstDay : firstDay -1); d++) {
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-     // Исправленный цикл отрисовки дней месяца:
-     // Начинаем с первого дня месяца (d=1)
-     for(let d=1; d<=daysInMonth; d++){
-         let dt = new Date(y, m, d);
-         let diffDays = Math.floor((dt - startDate) / (1000 * 60 *60 *24));
-         let baseShift = cycle(diffDays);
-         
-         let k = `${y}-${m+1}-${d}`; // Формат ключа для localStorage (месяц +1, т.к. getMonth() с нуля)
-         let status = manual[k] || baseShift;
-         
-         // Считаем рабочие смены только для текущего выбранного работника
-         if(w.value === names[idx] && status !== "Отсыпной" && status !== "Выходной"){
-             workDaysCount++;
-         }
-         
-         c.innerHTML += `
-             <div class="dayBox ${color(status)} ${dt.toDateString() === today.toDateString() ? "today" : ""}"
-                 onclick="toggle('${k}','${baseShift}')">
-                 <div>${d}</div>
-                 <div class="small">${dt.toLocaleDateString("ru-RU", {weekday:"short"})}</div>
-                 <div><b>${status}</b></div>
-             </div>`;
-     }
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     // Конец исправленного цикла
-
-}
-// Обновляем счетчик рабочих смен для выбранного работника
-counter.textContent = `Рабочих смен (${w.value}): ${workDaysCount}`;
+   // Основной цикл отрисовки дней месяца
+   for(let d=1; d<=daysInMonth; d++){
+       let dt = new Date(y, m, d);
+       
+       // --- НАЧАЛО БЛОКА РАСЧЕТА ДЛЯ КАЖДОГО ДНЯ ---
+       let dayStatusHTML = "";
+       let isTodayClass = dt.toDateString() === new Date().toDateString() ? "today" : "";
+       
+       // Перебираем всех работников для этого дня
+       names.forEach((name, idx) => {
+           let workerStartDateStr = dates[idx] || '2024-01-01';
+           let workerStartDate = new Date(workerStartDateStr);
+           
+           // Проверяем, выбран ли этот работник сейчас в селекте
+           let isSelectedWorker = (w.value === name);
+           
+           // Рассчитываем базовую смену исходя из даты начала этого работника
+           let diffDays = Math.floor((dt - workerStartDate) / (1000 * 60 *60 *24));
+           let baseShiftForWorker = cycle(diffDays);
+           
+           // Уникальный ключ для хранения ручных правок (год-месяц-день-имя)
+           let k = `${y}-${m+1}-${d}-${name}`; 
+           let statusForWorker = manual[k] || baseShiftForWorker;
+           
+           // Если это текущий выбранный работник и сегодня его рабочая смена - красим ячейку и считаем ее
+           if(isSelectedWorker && statusForWorker !== "Отсыпной" && statusForWorker !== "Выходной"){
+               dayStatusHTML += `<b>${statusForWorker}</b><br>`; // Показываем статус выбранного работника жирным
+               totalWorkDaysForSelectedWorker++;
+               isTodayClass += ` ${color(statusForWorker)}`; // Добавляем класс цвета к .today если нужно
+           } else if(isSelectedWorker){
+               dayStatusHTML += `${statusForWorker}<br>`; // Показываем статус нерабочего дня обычного шрифтом
+           }
+       });
+       // --- КОНЕЦ БЛОКА РАСЧЕТА ---
+       
+       c.innerHTML += `
+         <div class="dayBox ${isTodayClass}"
+             onclick="toggle('${y}-${m+1}-${d}-${w.value}','День')"> <!-- Ключ теперь содержит имя -->
+             <div>${d}</div>
+             <div class="small">${dt.toLocaleDateString("ru-RU", {weekday:"short"})}</div>
+             <div>${dayStatusHTML}</div> <!-- Вставляем собранный HTML статусов -->
+         </div>`;
+   }
+   
+   // Обновляем счетчик внизу для выбранного работника
+   counter.textContent = `Рабочих смен (${w.value}): ${totalWorkDaysForSelectedWorker}`;
 }
 
 
@@ -360,24 +300,19 @@ counter.textContent = `Рабочих смен (${w.value}): ${workDaysCount}`;
 // Перерисовка при изменении данных в инпутах или селекте
 w.onchange = () => { selected = w.value; save(); render(); };
 nInputs.forEach(inp => inp.oninput = render);
-dInputs.forEach(inp => inp.onchange = render); // onchange для date-picker
+dInputs.forEach(inp => inp.onchange = render); 
 
 function init() {
-
-   nInputs.forEach((nInput, i) => {
-       nInput.value = names[i];
-   });
-   dInputs.forEach((dInput, i) => {
-       dInput.value = dates[i];
-   });
-
+   nInputs.forEach((nInput, i) => { nInput.value = names[i]; });
+   dInputs.forEach((dInput, i) => { dInput.value = dates[i]; });
+   
    w.innerHTML = "";
    names.forEach(n => {
        let o = document.createElement("option");
-       o.textContent = n; // textContent вместо text для безопасности
+       o.textContent = n; 
        w.appendChild(o);
    });
-
+   
    w.value = selected;
    render();
 }
