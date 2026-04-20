@@ -3,21 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b0c10">
+
+<link rel="manifest" href="manifest.json">
+
 <title>Смены</title>
 
 <style>
-body{
-font-family:-apple-system, BlinkMacSystemFont;
+*{box-sizing:border-box;}
+
+html,body{
+width:100%;
 margin:0;
+overflow-x:hidden;
+font-family:-apple-system,BlinkMacSystemFont;
 background:#0b0c10;
 color:white;
+}
+
+body{
 text-align:center;
-
-/* FIX iPhone */
-overflow-y:auto;
--webkit-overflow-scrolling: touch;
-
-padding-bottom: env(safe-area-inset-bottom);
+padding-bottom:env(safe-area-inset-bottom);
 }
 
 h2{margin:12px 0;}
@@ -30,7 +36,7 @@ padding:12px;
 margin:12px;
 }
 
-input, select{
+input,select{
 background:#1c1f2a;
 color:white;
 border:none;
@@ -70,9 +76,9 @@ display:grid;
 grid-template-columns:repeat(7,1fr);
 gap:6px;
 padding:10px;
-position:absolute;
 width:100%;
-transition:transform 0.3s ease, opacity 0.2s ease;
+position:absolute;
+transition:transform .35s ease, opacity .25s ease;
 }
 
 .dayBox{
@@ -88,16 +94,10 @@ justify-content:space-between;
 
 .work,.night{background:#2d303d;}
 .sleep,.off{background:#5c5c5c;}
-
 .today{outline:2px solid #4da3ff;}
-
 .small{font-size:9px;opacity:0.6;}
 
-#counter{
-margin:6px;
-font-size:13px;
-opacity:0.8;
-}
+#counter{margin:6px;font-size:13px;opacity:0.8;}
 </style>
 </head>
 
@@ -106,11 +106,10 @@ opacity:0.8;
 <h2>Смены</h2>
 
 <div class="topBlock">
-<input id="n0"><input type="date" id="d0"><br>
-<input id="n1"><input type="date" id="d1"><br>
-<input id="n2"><input type="date" id="d2"><br>
-<input id="n3"><input type="date" id="d3"><br>
-
+<input id="n0"><input id="d0" type="date"><br>
+<input id="n1"><input id="d1" type="date"><br>
+<input id="n2"><input id="d2" type="date"><br>
+<input id="n3"><input id="d3" type="date"><br>
 <select id="worker"></select>
 </div>
 
@@ -128,185 +127,166 @@ opacity:0.8;
 
 <script>
 
-const calendar=document.getElementById("calendar");
-const worker=document.getElementById("worker");
-const monthLabel=document.getElementById("monthLabel");
+const c=document.getElementById("calendar");
+const w=document.getElementById("worker");
+const mLabel=document.getElementById("monthLabel");
 const counter=document.getElementById("counter");
 
-/* FIX: proper DOM refs */
-const n0=document.getElementById("n0");
-const n1=document.getElementById("n1");
-const n2=document.getElementById("n2");
-const n3=document.getElementById("n3");
+const n0=n1=n2=n3=null;
+const d0=d1=d2=d3=null;
 
-const d0=document.getElementById("d0");
-const d1=document.getElementById("d1");
-const d2=document.getElementById("d2");
-const d3=document.getElementById("d3");
-
-let names=JSON.parse(localStorage.getItem("names"))||["Давид","Женька","Рома","Я"];
+let names=JSON.parse(localStorage.getItem("names"))||["Давид","Женя","Рома","Я"];
 let dates=JSON.parse(localStorage.getItem("dates"))||["","","",""];
 let selected=localStorage.getItem("worker")||names[0];
-
 let manual=JSON.parse(localStorage.getItem("manual"))||{};
 
-let currentDate=new Date();
+let current=new Date();
 
-/* init inputs */
-[n0,n1,n2,n3].forEach((el,i)=>el.value=names[i]);
-[d0,d1,d2,d3].forEach((el,i)=>el.value=dates[i]);
+/* DOM refs */
+const nn=[n0,n1,n2,n3].map((_,i)=>document.getElementById("n"+i));
+const dd=[d0,d1,d2,d3].map((_,i)=>document.getElementById("d"+i));
 
-function updateSelect(){
-worker.innerHTML="";
-names.forEach(n=>{
-let o=document.createElement("option");
-o.text=n;
-worker.add(o);
-});
-worker.value=selected;
+/* vibro */
+function vibro(t="light"){
+if(!navigator.vibrate) return;
+if(t=="light")navigator.vibrate(10);
+if(t=="medium")navigator.vibrate(20);
 }
 
-function save(){
-names=[n0.value,n1.value,n2.value,n3.value];
-dates=[d0.value,d1.value,d2.value,d3.value];
-selected=worker.value;
+/* cycle */
+function cycle(d){
+return ["День","Ночь","Отсыпной","Выходной"][((d%4)+4)%4];
+}
+function color(s){
+return {День:"work",Ночь:"night",Отсыпной:"sleep",Выходной:"off"}[s];
+}
+function next(s){
+let a=["День","Ночь","Отсыпной","Выходной"];
+return a[(a.indexOf(s)+1)%4];
+}
 
+/* SWIPE */
+let sx=0;
+document.addEventListener("touchstart",e=>sx=e.touches[0].clientX);
+document.addEventListener("touchend",e=>{
+let ex=e.changedTouches[0].clientX;
+if(sx-ex>50){vibro();animateMonth(1);}
+if(ex-sx>50){vibro();animateMonth(-1);}
+});
+
+/* ANIMATION */
+function animateMonth(dir){
+
+c.style.opacity="0";
+c.style.transform=`translateX(${dir*100}%)`;
+
+setTimeout(()=>{
+current.setMonth(current.getMonth()+dir);
+render();
+
+c.style.transform=`translateX(${-dir*100}%)`;
+
+requestAnimationFrame(()=>{
+c.style.opacity="1";
+c.style.transform="translateX(0)";
+});
+
+},200);
+}
+
+/* TOGGLE */
+function toggle(k,b){
+manual[k]=next(manual[k]||b);
+vibro("medium");
+saveM();
+render();
+}
+
+/* SAVE */
+function save(){
+names=nn.map(i=>i.value);
+dates=dd.map(i=>i.value);
 localStorage.setItem("names",JSON.stringify(names));
 localStorage.setItem("dates",JSON.stringify(dates));
 localStorage.setItem("worker",selected);
 }
-
-function saveManual(){
+function saveM(){
 localStorage.setItem("manual",JSON.stringify(manual));
 }
 
-/* cycle */
-function cycle(diff){
-let c=((diff%4)+4)%4;
-return ["День","Ночь","Отсыпной","Выходной"][c];
-}
-
-function color(s){
-return {День:"work",Ночь:"night",Отсыпной:"sleep",Выходной:"off"}[s];
-}
-
-function nextShift(s){
-const arr=["День","Ночь","Отсыпной","Выходной"];
-let i=arr.indexOf(s);
-return arr[(i+1)%4];
-}
-
-/* swipe FIX */
-let startX=0;
-
-document.addEventListener("touchstart",e=>{
-startX=e.touches[0].clientX;
-});
-
-document.addEventListener("touchend",e=>{
-let endX=e.changedTouches[0].clientX;
-
-if(startX-endX>50) animateMonth(-1);
-if(endX-startX>50) animateMonth(1);
-});
-
-function animateMonth(dir){
-calendar.style.opacity="0";
-calendar.style.transform=`translateX(${dir*100}px)`;
-
-setTimeout(()=>{
-currentDate.setMonth(currentDate.getMonth()+dir);
-render();
-
-calendar.style.transform=`translateX(${-dir*100}px)`;
-
-requestAnimationFrame(()=>{
-calendar.style.opacity="1";
-calendar.style.transform="translateX(0)";
-});
-
-},180);
-}
-
-/* toggle day */
-function toggleDay(key, original){
-manual[key]=nextShift(manual[key]??original);
-saveManual();
-render();
-}
-
-/* render */
+/* RENDER */
 function render(){
 
 save();
-calendar.innerHTML="";
+c.innerHTML="";
 
-let m=currentDate.getMonth();
-let y=currentDate.getFullYear();
+let y=current.getFullYear();
+let m=current.getMonth();
 
-monthLabel.textContent=
-currentDate.toLocaleDateString("ru-RU",{month:"long",year:"numeric"});
+mLabel.textContent=current.toLocaleDateString("ru-RU",{month:"long",year:"numeric"});
 
 let first=new Date(y,m,1).getDay();
-if(first===0) first=7;
+if(first==0)first=7;
 
 let days=new Date(y,m+1,0).getDate();
 
-let index=names.indexOf(worker.value);
-let start=new Date(dates[index]);
+let i=names.indexOf(w.value);
+let start=new Date(dates[i]||0);
+
 let today=new Date();
+let work=0;
 
-let workCount=0;
-
-for(let i=1;i<first;i++) calendar.innerHTML+="<div></div>";
+for(let i=1;i<first;i++)c.innerHTML+="<div></div>";
 
 for(let d=1;d<=days;d++){
 
-let date=new Date(y,m,d);
-
-let diff=0;
-if(!isNaN(start)){
-diff=Math.floor((date-start)/(1000*60*60*24));
-}
-
+let dt=new Date(y,m,d);
+let diff=Math.floor((dt-start)/86400000);
 let base=cycle(diff);
 
-let key=`${y}-${m}-${d}`;
-let s=manual[key]??base;
+let k=`${y}-${m}-${d}`;
+let s=manual[k]||base;
 
-if(s==="День"||s==="Ночь") workCount++;
+if(s!="Отсыпной"&&s!="Выходной")work++;
 
-let isToday=date.toDateString()===today.toDateString();
-
-calendar.innerHTML+=`
-<div class="dayBox ${color(s)} ${isToday?'today':''}"
-onclick="toggleDay('${key}','${base}')">
+c.innerHTML+=`
+<div class="dayBox ${color(s)} ${dt.toDateString()==today.toDateString()?"today":""}"
+onclick="toggle('${k}','${base}')">
 <div>${d}</div>
-<div class="small">${date.toLocaleDateString("ru-RU",{weekday:"short"})}</div>
+<div class="small">${dt.toLocaleDateString("ru-RU",{weekday:"short"})}</div>
 <div><b>${s}</b></div>
 </div>`;
 }
 
-counter.textContent=`Рабочих смен: ${workCount}`;
+counter.textContent="Рабочих смен: "+work;
 }
 
-/* events */
-document.querySelectorAll("input").forEach(i=>{
-i.addEventListener("input",()=>{
-updateSelect();
-render();
-});
+/* INIT */
+w.onchange=()=>{selected=w.value;save();render();};
+
+function init(){
+names.forEach((n,i)=>{
+if(nn[i])nn[i].value=n;
+if(dd[i])dd[i].value=dates[i];
 });
 
-worker.addEventListener("change",()=>{
-selected=worker.value;
-save();
-render();
+w.innerHTML="";
+names.forEach(n=>{
+let o=document.createElement("option");
+o.text=n;
+w.add(o);
 });
 
-/* start */
-updateSelect();
+w.value=selected;
 render();
+}
+
+init();
+
+/* PWA */
+if("serviceWorker" in navigator){
+navigator.serviceWorker.register("sw.js");
+}
 
 </script>
 
