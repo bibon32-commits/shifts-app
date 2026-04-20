@@ -115,6 +115,7 @@ button{
     font-size:16px;
     font-weight:600;
     text-transform:capitalize;
+    user-select:none;
 }
 
 #counter{
@@ -265,7 +266,7 @@ button{
   </div>
 </div>
 
-<div class="controls">
+<div class="controls" id="monthControls">
   <button type="button" id="prevBtn">‹</button>
   <div id="monthLabel"></div>
   <button type="button" id="nextBtn">›</button>
@@ -290,6 +291,7 @@ const workerPrev = document.getElementById("workerPrev");
 const workerNext = document.getElementById("workerNext");
 const workerName = document.getElementById("workerName");
 const workerSwitch = document.getElementById("workerSwitch");
+const monthControls = document.getElementById("monthControls");
 
 const names = ["Давид", "Женька", "Рома", "Я"];
 const defaultDates = ["2026-04-22", "2026-04-20", "2026-04-19", "2026-04-21"];
@@ -301,8 +303,8 @@ if (!names.includes(selected)) selected = "Я";
 let manual = JSON.parse(localStorage.getItem("manual")) || {};
 let current = new Date();
 
-let calendarStartX = 0;
-let calendarStartY = 0;
+let monthStartX = 0;
+let monthStartY = 0;
 let workerStartX = 0;
 let workerStartY = 0;
 
@@ -322,10 +324,10 @@ function cycle(diff) {
 
 function color(status) {
   return {
-    "День": "sleep off",
-    "Ночь": "sleep off",
-    "Отсыпной": "work night",
-    "Выходной": "work night"
+    "День": "work night",
+    "Ночь": "work night",
+    "Отсыпной": "sleep off",
+    "Выходной": "sleep off"
   }[status];
 }
 
@@ -441,18 +443,18 @@ function render() {
   counter.textContent = "Рабочих смен (" + selected + "): " + totalWorkDays;
 }
 
-c.addEventListener("touchstart", event => {
-  calendarStartX = event.touches[0].clientX;
-  calendarStartY = event.touches[0].clientY;
+monthControls.addEventListener("touchstart", event => {
+  monthStartX = event.touches[0].clientX;
+  monthStartY = event.touches[0].clientY;
 }, { passive: true });
 
-c.addEventListener("touchend", event => {
+monthControls.addEventListener("touchend", event => {
   const endX = event.changedTouches[0].clientX;
   const endY = event.changedTouches[0].clientY;
-  const diffX = calendarStartX - endX;
-  const diffY = calendarStartY - endY;
+  const diffX = monthStartX - endX;
+  const diffY = monthStartY - endY;
 
-  if (Math.abs(diffY) > 50 || Math.abs(diffX) < 50) return;
+  if (Math.abs(diffY) > 40 || Math.abs(diffX) < 35) return;
   animateMonth(diffX > 0 ? 1 : -1);
 }, { passive: true });
 
